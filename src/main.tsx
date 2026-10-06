@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import { Instrument } from './instrument'
 import './style.css'
 
@@ -148,6 +149,8 @@ function PortfolioApp() {
           <MachineIterationMap />
         </>}
       </main>
+
+      <Analytics />
     </div>
   )
 }
