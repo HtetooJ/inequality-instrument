@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import { Instrument } from './instrument'
 import './style.css'
 
@@ -155,5 +156,6 @@ function PortfolioApp() {
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <PortfolioApp />
+    <Analytics />
   </React.StrictMode>,
 )
