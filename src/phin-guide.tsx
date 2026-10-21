@@ -6,12 +6,12 @@ const BEATS = [
   '',
   'Set the glass.',
   'Add condensed milk.',
-  'Base · 1 of 4',
-  'Chamber · 2 of 4',
+  'Base',
+  'Chamber',
   'Add ground coffee.',
-  'Pressing plate · 3 of 4',
+  'Pressing plate',
   'Pour water. Let it bloom.',
-  'Cover · 4 of 4',
+  'Cover',
   'Let it drip.',
   'Lift. Serve hot.',
 ] as const
@@ -48,6 +48,7 @@ function StillScene({ beat }: { beat: number }) {
       <path d="M130 428q190-96 380 0l-12 20q-178 83-356 0z" fill="#835d3c" stroke="#684a32" strokeWidth="2" />
       <ellipse cx="320" cy="428" rx="190" ry="51" fill="#a87950" stroke="#684a32" strokeWidth="2" />
       <ellipse cx="320" cy="428" rx="173" ry="40" fill="none" stroke="#c6986d" strokeOpacity=".5" strokeWidth="1.5" />
+      <g transform="translate(320 428) scale(.667) translate(-320 -428)">
       {hasGlass && <g>
         <path d="M225 242h190l-14 166q-2 23-24 25h-114q-22-2-24-25z" fill="#e3e9e4" fillOpacity=".42" stroke="#646a66" strokeWidth="2" />
         {hasMilk && <path d="M233 355q87-9 174 0l-5 52q-2 19-23 19H260q-21-2-23-20z" fill="#e3d2b8" />}
@@ -81,6 +82,7 @@ function StillScene({ beat }: { beat: number }) {
         <ellipse cx="320" cy="103" rx="29" ry="12" fill="#c4cbc6" stroke="#626966" strokeWidth="2" />
       </g>}
       {beat === 9 && <ellipse cx="320" cy="294" rx="6" ry="9" fill="#65452f" />}
+      </g>
     </svg>
   )
 }
@@ -152,15 +154,16 @@ export function PhinGuide({ onBack }: { onBack: () => void }) {
             role="img"
             aria-label={`Step ${activeBeat + 1} of 11. ${activeBeat === 0 ? 'An empty coffee table.' : BEATS[activeBeat]}`}
           />
-          <div className="phin-caption" aria-live="polite" aria-atomic="true">
+          {BEATS[activeBeat] && <div className="phin-caption" aria-live="polite" aria-atomic="true">
             <p>{BEATS[activeBeat]}</p>
-            {activeBeat === 0 && <span className="phin-scroll-cue" aria-hidden="true">Scroll <span>↓</span></span>}
-          </div>
+          </div>}
         </div>
 
         <header className="phin-header">
           <button className="phin-back" type="button" onClick={onBack} aria-label="Return to the portfolio">
-            <span aria-hidden="true">←</span><span>Portfolio</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none">
+              <path d="M15 4 7 12l8 8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
           <span className="phin-wordmark">phin.</span>
           <span className="phin-progress" aria-hidden="true"><span ref={progressRef} /></span>

@@ -4,6 +4,7 @@ const EASE = (value: number) => {
   const t = THREE.MathUtils.clamp(value, 0, 1)
   return t * t * (3 - 2 * t)
 }
+const OBJECT_SCALE = 2 / 3
 const segment = (p: number, start: number, end: number) => EASE((p - start) / (end - start))
 const fade = (p: number, start: number, end: number) => THREE.MathUtils.clamp((p - start) / (end - start), 0, 1)
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z)
@@ -141,6 +142,7 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
 
   const glassGroup = new THREE.Group()
   glassGroup.position.set(0, .05, 0)
+  glassGroup.scale.setScalar(OBJECT_SCALE)
   const glassBody = lathe([
     [0, .06], [.43, .06], [.48, .08], [.52, .16], [.52, 1.28], [.50, 1.34], [.48, 1.36],
     [.46, 1.33], [.46, .2], [0, .2],
@@ -332,6 +334,7 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
   lidPart.add(lidTab)
 
   const parts = new THREE.Group()
+  parts.scale.setScalar(OBJECT_SCALE)
   basePart.position.y = 1.47
   chamberPart.position.y = 1.57
   pressPart.position.y = 2.32
@@ -341,6 +344,7 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
 
   // Dry grounds arrive as a small, source-free fall from above the frame.
   const grounds = new THREE.Group()
+  grounds.scale.setScalar(OBJECT_SCALE)
   const fallingGrains: { mesh: THREE.Mesh; target: THREE.Vector3; phase: number }[] = []
   const grainCount = 360
   const grainGeometry = new THREE.DodecahedronGeometry(.014, 0)
@@ -371,30 +375,34 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
     V(0, 4.3, 0), V(.018, 3.78, -.006), V(-.014, 3.16, .008), V(0, 2.52, .02),
   ])
   const stream = new THREE.Mesh(new THREE.TubeGeometry(waterPath, 24, .031, 8, false), streamMaterial)
+  stream.scale.setScalar(OBJECT_SCALE)
   stream.visible = false
   stream.renderOrder = 3
   scene.add(stream)
   const milkStreamMaterial = new THREE.MeshBasicMaterial({ color: 0xe5c9a5, transparent: true, opacity: 0, depthWrite: false })
   const milkStreamPath = new THREE.CatmullRomCurve3([V(0, 2.08, 0), V(.008, 1.64, 0), V(-.006, 1.05, .006), V(0, .29, .01)])
   const milkStream = new THREE.Mesh(new THREE.TubeGeometry(milkStreamPath, 20, .042, 8, false), milkStreamMaterial)
+  milkStream.scale.setScalar(OBJECT_SCALE)
   milkStream.visible = false
   milkStream.renderOrder = 3
   scene.add(milkStream)
   const waterMaterial = new THREE.MeshStandardMaterial({ color: 0xb9e2e2, roughness: .26, transparent: true, opacity: .88, depthWrite: false })
   const waterSurface = cylinder(.42, .42, .018, waterMaterial, 48)
-  waterSurface.position.set(0, 2.31, .02)
+  waterSurface.scale.setScalar(OBJECT_SCALE)
+  waterSurface.position.set(0, 2.31 * OBJECT_SCALE, .02 * OBJECT_SCALE)
   waterSurface.visible = false
   waterSurface.castShadow = false
   scene.add(waterSurface)
   const drips = new THREE.Group()
   const dropletMaterial = mat(0x513824, .3)
-  const droplet = new THREE.Mesh(new THREE.SphereGeometry(.065, 24, 18), dropletMaterial)
+  const droplet = new THREE.Mesh(new THREE.SphereGeometry(.065 * OBJECT_SCALE, 24, 18), dropletMaterial)
   droplet.scale.set(.92, 1.12, .92)
   droplet.visible = false
   drips.add(droplet)
   const dripThreadMaterial = new THREE.MeshBasicMaterial({ color: 0x513824, transparent: true, opacity: 0, depthWrite: false })
   const dripThreadPath = new THREE.CatmullRomCurve3([V(0, 1.49, 0), V(.012, 1.43, .008), V(.032, 1.37, .024)])
-  const dripThread = new THREE.Mesh(new THREE.TubeGeometry(dripThreadPath, 8, .018, 6, false), dripThreadMaterial)
+  const dripThread = new THREE.Mesh(new THREE.TubeGeometry(dripThreadPath, 8, .018 * OBJECT_SCALE, 6, false), dripThreadMaterial)
+  dripThread.scale.setScalar(OBJECT_SCALE)
   dripThread.visible = false
   dripThread.renderOrder = 4
   scene.add(dripThread)
@@ -410,7 +418,7 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
   }
   scene.add(ripples)
 
-  const softShadow = new THREE.Mesh(new THREE.CircleGeometry(.74, 64), shadowMaterial)
+  const softShadow = new THREE.Mesh(new THREE.CircleGeometry(.74 * OBJECT_SCALE, 64), shadowMaterial)
   softShadow.rotation.x = -Math.PI / 2
   softShadow.position.set(0, .052, 0)
   softShadow.scale.set(1.08, .72, 1)
@@ -520,14 +528,13 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
       ? (p >= 7 ? .78 : 0)
       : segment(p, 7, 7.66) * .78
     waterSurface.visible = p >= 7 && p < 8.3
-    waterSurface.position.y = 1.82 + .49 * bloomFill
-    waterSurface.scale.set(1, 1, 1)
+    waterSurface.position.y = (1.82 + .49 * bloomFill) * OBJECT_SCALE
     ripples.visible = stream.visible
     ripples.children.forEach((child, index) => {
       const ring = child as THREE.Mesh
       const phase = (pourProgress * 1.7 + index * .48) % 1
-      ring.position.set(0, waterSurface.position.y + .012, .02)
-      ring.scale.setScalar(.55 + phase * 1.4)
+      ring.position.set(0, waterSurface.position.y + .012 * OBJECT_SCALE, .02 * OBJECT_SCALE)
+      ring.scale.setScalar((.55 + phase * 1.4) * OBJECT_SCALE)
       const material = ring.material as THREE.MeshBasicMaterial
       material.opacity = stream.visible ? .34 * (1 - phase) : 0
       ring.visible = stream.visible
@@ -546,21 +553,21 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
     dripThreadMaterial.opacity = 0
     if (stillPose && dripStart) {
       droplet.visible = true
-      droplet.position.set(.032, 1.37, .024)
+      droplet.position.set(.032 * OBJECT_SCALE, 1.37 * OBJECT_SCALE, .024 * OBJECT_SCALE)
       droplet.scale.set(.92, 1.12, .92)
     } else if (dripStart && activeDrop) {
       droplet.visible = true
-      const surfaceBeforeImpact = glassGroup.position.y + coffee.position.y + .858 * (settledDropCount * .11)
+      const surfaceBeforeImpact = glassGroup.position.y + OBJECT_SCALE * (coffee.position.y + .858 * (settledDropCount * .11))
       if (activeDrop.inAir) {
-        const surfaceY = surfaceBeforeImpact + .055
-        const dropY = THREE.MathUtils.lerp(1.37, surfaceY, activeDrop.falling)
-        droplet.position.set(.032, dropY, .024)
+        const surfaceY = surfaceBeforeImpact + .055 * OBJECT_SCALE
+        const dropY = THREE.MathUtils.lerp(1.37 * OBJECT_SCALE, surfaceY, activeDrop.falling)
+        droplet.position.set(.032 * OBJECT_SCALE, dropY, .024 * OBJECT_SCALE)
         const stretch = .7 + activeDrop.forming * .55
         droplet.scale.set(.82 + activeDrop.forming * .1, stretch, .82 + activeDrop.forming * .1)
         dripThread.visible = activeDrop.falling === 0
         dripThreadMaterial.opacity = dripThread.visible ? .86 * activeDrop.forming : 0
       } else {
-        droplet.position.set(.032, surfaceBeforeImpact + .035, .024)
+        droplet.position.set(.032 * OBJECT_SCALE, surfaceBeforeImpact + .035 * OBJECT_SCALE, .024 * OBJECT_SCALE)
         droplet.scale.set(.82, 1.12 * (1 - activeDrop.impacting * .22), .82)
       }
     }
@@ -573,7 +580,7 @@ export function createPhinScene(canvas: HTMLCanvasElement): PhinScene {
     const sideX = Math.cos(finalOrbitAngle) * sideOffset
     const sideZ = -Math.sin(finalOrbitAngle) * sideOffset
     // Keep the brewer's tabletop path in world space; camera orbit must not drag it around the table.
-    parts.position.set(sideX, THREE.MathUtils.lerp(.78 * clearGlass, -1.42, tableSettle), sideZ)
+    parts.position.set(sideX, THREE.MathUtils.lerp(.78 * OBJECT_SCALE * clearGlass, -1.42 * OBJECT_SCALE, tableSettle), sideZ)
     grounds.position.copy(parts.position)
 
     // A smooth partial orbit lowers to a held side view for the drops, then rises as the phin leaves.
