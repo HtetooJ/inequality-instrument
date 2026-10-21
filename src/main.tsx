@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Instrument } from './instrument'
+import { PhinGuide } from './phin-guide'
 import './style.css'
 
 type Section = 'notes' | 'playground'
-type Item = 'material-note' | 'inequality-instrument'
+type Item = 'material-note' | 'inequality-instrument' | 'phin-guide'
 type MobilePanel = 'list' | 'detail'
 
 const SECTION_ITEMS: Record<Section, { id: Item; title: string; description?: string }[]> = {
@@ -13,6 +14,7 @@ const SECTION_ITEMS: Record<Section, { id: Item; title: string; description?: st
   ],
   playground: [
     { id: 'inequality-instrument', title: 'Inequality Instrument', description: 'An interactive mechanical study' },
+    { id: 'phin-guide', title: 'Meet the Phin', description: 'An interactive phin coffee guide' },
   ],
 }
 
@@ -99,6 +101,10 @@ function PortfolioApp() {
   const selectItem = (item: Item) => {
     setSelectedItem(item)
     setMobilePanel('detail')
+  }
+
+  if (selectedItem === 'phin-guide') {
+    return <PhinGuide onBack={() => { setSection('playground'); setSelectedItem('inequality-instrument'); setMobilePanel('list') }} />
   }
 
   return (
