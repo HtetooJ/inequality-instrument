@@ -10,6 +10,7 @@ type SceneOptions = {
 }
 
 type PartPose = { node: THREE.Object3D; baseY: number; assembledY: number; currentY: number }
+const minimumProductZoom = .72
 
 export type PhinScene = {
   setExploded: (exploded: boolean) => void
@@ -104,9 +105,11 @@ export function createPhinScene(canvas: HTMLCanvasElement, options: SceneOptions
   const targetPose = (exploded: boolean) => new Map([...parts].map(([name, part]) => [name, exploded ? part.baseY : part.assembledY]))
   const cameraPose = (exploded: boolean) => {
     const aspect = Math.max(.01, canvas.clientWidth / Math.max(1, canvas.clientHeight))
-    const explodedHeight = Math.max(expandedViewHeight, .135 / aspect)
-    const assembledZoom = Math.min(expandedViewHeight / .122, expandedViewHeight * aspect / .155)
-    return { height: exploded ? explodedHeight : expandedViewHeight / assembledZoom, y: exploded ? .094 : .048 }
+    const mobileZoom = exploded
+      ? expandedViewHeight / Math.max(expandedViewHeight, .135 / aspect)
+      : Math.min(expandedViewHeight / .122, expandedViewHeight * aspect / .155)
+    const defaultZoom = window.innerWidth >= 761 ? minimumProductZoom : mobileZoom
+    return { height: expandedViewHeight / defaultZoom, y: exploded ? .094 : .048 }
   }
 
   const startTransition = (exploded: boolean) => {
@@ -193,7 +196,7 @@ export function createPhinScene(canvas: HTMLCanvasElement, options: SceneOptions
     controls.enablePan = false
     controls.minDistance = .35
     controls.maxDistance = 1.8
-    controls.minZoom = .72
+    controls.minZoom = minimumProductZoom
     controls.maxZoom = 2.8
     controls.minPolarAngle = .08
     controls.maxPolarAngle = Math.PI * .83
