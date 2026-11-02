@@ -254,6 +254,7 @@ button { -webkit-tap-highlight-color: transparent; }
   font: 500 13px/1.2 var(--mono);
   letter-spacing: .08em;
   transition: color 140ms ease-out, background 140ms ease-out;
+  text-decoration: none;
 }
 .section-tab:hover { color: var(--portfolio-ink); background: rgba(255,255,255,.42); }
 .section-tab.is-active { color: var(--portfolio-ink); background: #f6f5f1; box-shadow: inset 0 1px rgba(255,255,255,.86),0 1px 2px rgba(35,34,29,.06); }
@@ -291,6 +292,7 @@ button { -webkit-tap-highlight-color: transparent; }
   text-align: left;
   cursor: pointer;
   transition: color 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out;
+  text-decoration: none;
 }
 .index-item:hover { color: #1f201c; background: rgba(227,226,219,.34); }
 .index-item.is-selected { margin: 0; padding-left: 0; padding-right: 14px; background: transparent; }
@@ -397,8 +399,8 @@ button { -webkit-tap-highlight-color: transparent; }
   .portfolio-shell--detail .portfolio-index { display: none; }
   .portfolio-shell--list .portfolio-detail { display: none; }
   .mobile-section-tabs { display: flex; gap: 6px; margin-top: 15px; padding-bottom: 7px; border-bottom: 1px solid var(--portfolio-rule); }
-  .mobile-section-tabs button { padding: 8px 11px; border: 1px solid transparent; background: transparent; color: #706f68; text-transform: uppercase; font: 500 13px/1.2 var(--mono); letter-spacing: .04em; cursor: pointer; }
-  .mobile-section-tabs button.is-active { border-color: rgba(52,51,45,.16); background: #efeee9; color: var(--portfolio-ink); }
+  .mobile-section-tabs a { padding: 8px 11px; border: 1px solid transparent; background: transparent; color: #706f68; text-transform: uppercase; text-decoration: none; font: 500 13px/1.2 var(--mono); letter-spacing: .04em; cursor: pointer; }
+  .mobile-section-tabs a.is-active { border-color: rgba(52,51,45,.16); background: #efeee9; color: var(--portfolio-ink); }
   .index-heading { margin: 31px 0 31px; }
   .index-heading h2 { font-size: 32px; }
   .index-list { margin-top: 0; }

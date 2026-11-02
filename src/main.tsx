@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Instrument } from './instrument'
 import { PhinGuide } from './phin-guide'
@@ -7,6 +7,22 @@ import './style.css'
 type Section = 'notes' | 'playground'
 type Item = 'material-note' | 'inequality-instrument' | 'phin-guide'
 type MobilePanel = 'list' | 'detail'
+type Route = { section: Section; item: Item; isSectionRoot: boolean }
+
+const ITEM_PATHS: Record<Item, string> = {
+  'material-note': '/notes/closer-to-the-material',
+  'inequality-instrument': '/playground/inequality-instrument',
+  'phin-guide': '/playground/coffee-phin',
+}
+
+function readRoute(pathname: string): Route {
+  const path = pathname.replace(/\/+$/, '') || '/'
+  if (path === '/playground') return { section: 'playground', item: 'inequality-instrument', isSectionRoot: true }
+  if (path === '/playground/coffee-phin') return { section: 'playground', item: 'phin-guide', isSectionRoot: false }
+  if (path === '/playground/inequality-instrument') return { section: 'playground', item: 'inequality-instrument', isSectionRoot: false }
+  if (path === '/notes') return { section: 'notes', item: 'material-note', isSectionRoot: true }
+  return { section: 'notes', item: 'material-note', isSectionRoot: path === '/' }
+}
 
 const SECTION_ITEMS: Record<Section, { id: Item; title: string; description?: string }[]> = {
   notes: [
@@ -14,7 +30,7 @@ const SECTION_ITEMS: Record<Section, { id: Item; title: string; description?: st
   ],
   playground: [
     { id: 'inequality-instrument', title: 'Inequality Instrument', description: 'An interactive mechanical study' },
-    { id: 'phin-guide', title: 'Meet the Phin', description: 'An interactive phin coffee guide' },
+    { id: 'phin-guide', title: 'Coffee Phin' },
   ],
 }
 
@@ -85,48 +101,60 @@ function MachineIterationMap() {
 }
 
 function PortfolioApp() {
-  const [section, setSection] = useState<Section>('notes')
-  const [selectedItem, setSelectedItem] = useState<Item>('material-note')
-  const [mobilePanel, setMobilePanel] = useState<MobilePanel>('detail')
+  const [route, setRoute] = useState<Route>(() => readRoute(window.location.pathname))
+  const [mobilePanel, setMobilePanel] = useState<MobilePanel>(() => readRoute(window.location.pathname).isSectionRoot ? 'list' : 'detail')
+  const { section, item: selectedItem } = route
   const items = SECTION_ITEMS[section]
   const sectionTitle = section === 'notes' ? 'Notes' : 'Playground'
   const itemTitle = SECTION_ITEMS[section].find((item) => item.id === selectedItem)?.title ?? SECTION_ITEMS[section][0].title
 
-  const changeSection = (next: Section) => {
-    setSection(next)
-    setSelectedItem(SECTION_ITEMS[next][0].id)
-    setMobilePanel('list')
+  useEffect(() => {
+    const syncRoute = () => {
+      const nextRoute = readRoute(window.location.pathname)
+      setRoute(nextRoute)
+      setMobilePanel(nextRoute.isSectionRoot ? 'list' : 'detail')
+    }
+    window.addEventListener('popstate', syncRoute)
+    return () => window.removeEventListener('popstate', syncRoute)
+  }, [])
+
+  const navigate = (path: string, panel: MobilePanel = 'detail', replace = false) => {
+    if (replace) window.history.replaceState({}, '', path)
+    else if (window.location.pathname !== path) window.history.pushState({}, '', path)
+    setRoute(readRoute(path))
+    setMobilePanel(panel)
   }
 
-  const selectItem = (item: Item) => {
-    setSelectedItem(item)
-    setMobilePanel('detail')
+  const followLink = (event: React.MouseEvent<HTMLAnchorElement>, path: string, panel: MobilePanel = 'detail') => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    navigate(path, panel)
   }
 
   if (selectedItem === 'phin-guide') {
-    return <PhinGuide onBack={() => { setSection('playground'); setSelectedItem('inequality-instrument'); setMobilePanel('list') }} />
+    return <PhinGuide onBack={() => navigate('/playground', 'list', true)} />
   }
 
   return (
     <div className={`portfolio-shell portfolio-shell--${mobilePanel}`}>
       <aside className="portfolio-rail" aria-label="Portfolio sections">
-        <a className="portfolio-brand" href="#notes" aria-label="Htet portfolio home" onClick={(event) => { event.preventDefault(); changeSection('notes') }}>
+        <a className="portfolio-brand" href="/notes" aria-label="Htet portfolio home" onClick={(event) => followLink(event, '/notes', 'list')}>
           <span className="portfolio-brand__name">HTET</span>
         </a>
         <nav className="section-tabs" aria-label="Sections">
           {(['notes', 'playground'] as Section[]).map((key) => (
-            <button key={key} type="button" className={`section-tab${section === key ? ' is-active' : ''}`} aria-current={section === key ? 'page' : undefined} onClick={() => changeSection(key)}>
+            <a key={key} href={key === 'notes' ? '/notes' : '/playground'} className={`section-tab${section === key ? ' is-active' : ''}`} aria-current={section === key ? 'page' : undefined} onClick={(event) => followLink(event, key === 'notes' ? '/notes' : '/playground', 'list')}>
               <span className="section-tab__indicator" aria-hidden="true" />
               <span>{key}</span>
               <span className="section-tab__index">{key === 'notes' ? '01' : '02'}</span>
-            </button>
+            </a>
           ))}
         </nav>
       </aside>
 
       <section className="portfolio-index" aria-labelledby="index-title">
         <div className="mobile-section-tabs" role="tablist" aria-label="Portfolio sections">
-          {(['notes', 'playground'] as Section[]).map((key) => <button key={key} type="button" role="tab" aria-selected={section === key} className={section === key ? 'is-active' : ''} onClick={() => changeSection(key)}>{key}</button>)}
+          {(['notes', 'playground'] as Section[]).map((key) => <a key={key} role="tab" aria-selected={section === key} href={key === 'notes' ? '/notes' : '/playground'} className={section === key ? 'is-active' : ''} onClick={(event) => followLink(event, key === 'notes' ? '/notes' : '/playground', 'list')}>{key}</a>)}
         </div>
         <div className="index-heading">
           <h2 id="index-title">{sectionTitle}</h2>
@@ -135,10 +163,10 @@ function PortfolioApp() {
         <div className="index-list" role="list" aria-label={`${sectionTitle} items`}>
           {items.map((item) => (
             <div key={item.id} role="listitem">
-              <button type="button" className={`index-item${selectedItem === item.id ? ' is-selected' : ''}`} aria-current={selectedItem === item.id ? 'page' : undefined} onClick={() => selectItem(item.id)}>
+              <a href={ITEM_PATHS[item.id]} className={`index-item${selectedItem === item.id ? ' is-selected' : ''}`} aria-current={selectedItem === item.id ? 'page' : undefined} onClick={(event) => followLink(event, ITEM_PATHS[item.id])}>
                 <span className="index-item__line"><span>{item.title}</span></span>
                 {item.description && <span className="index-item__description">{item.description}</span>}
-              </button>
+              </a>
             </div>
           ))}
         </div>
@@ -146,8 +174,8 @@ function PortfolioApp() {
 
       <main className={`portfolio-detail${selectedItem === 'inequality-instrument' ? ' portfolio-detail--playground' : ''}`}>
         <div className="mobile-detail-bar">
-          <button type="button" onClick={() => setMobilePanel('list')} aria-label={`Back to ${sectionTitle} list`}><span aria-hidden="true">←</span> {sectionTitle}</button>
-          <span>{section === 'notes' ? '01 / NOTE' : '02 / PLAYGROUND'}</span>
+          <button type="button" onClick={() => navigate(section === 'notes' ? '/notes' : '/playground', 'list', true)} aria-label={`Back to ${sectionTitle} list`}><span aria-hidden="true">←</span> {sectionTitle}</button>
+          <span>{itemTitle}</span>
         </div>
         {selectedItem === 'material-note' ? <MaterialNote /> : <>
           <Instrument />
